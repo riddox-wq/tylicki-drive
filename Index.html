@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tylicki Drive</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --border-color: #334155;
+            --logo-grey: #4b5563;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, system-ui, sans-serif; 
+            padding: 15px; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            line-height: 1.4; 
+            margin: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container { max-width: 650px; margin: auto; }
+        
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--card-bg); width: 100%; max-width: 400px; padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+
+        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        
+        /* Logout Button Design */
+        .header-right button { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--danger-color); 
+            padding: 8px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .header-right button:active { transform: scale(0.9); background: rgba(239, 68, 68, 0.2); }
+        .icon-logout { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        
+        .drive-logo { width: 64px; height: 40px; transition: 0.3s ease; }
+        h2 { margin: 0; font-size: 1.5rem; color: var(--accent-color); font-weight: 900; line-height: 1; letter-spacing: -0.5px; }
+        #userNameDisplay { font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
+
+        .card { background: var(--card-bg); padding: 1.2rem; border-radius: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-bottom: 15px; border: 1px solid var(--border-color); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .stat-card { background: rgba(255,255,255,0.02); padding: 10px 5px; border-radius: 15px; border: 1px solid var(--border-color); text-align: center; }
+        .stat-label { font-size: 0.6rem; color: #94a3b8; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+        .stat-value { font-size: 0.85rem; font-weight: 800; }
+
+        label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.75em; color: #94a3b8; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 14px; box-sizing: border-box; font-size: 16px; background: #0f172a; color: white; outline: none; margin-bottom: 12px; }
+        
+        .edit-note { background: transparent; border: 1px dashed var(--border-color); color: var(--warning-color); font-size: 0.9em; padding: 8px 12px; margin-top: 8px; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        .edit-note:focus { border: 1px solid var(--warning-color); background: rgba(245, 158, 11, 0.08); outline: none; }
+
+        button { cursor: pointer; border: none; border-radius: 14px; font-weight: bold; transition: all 0.2s; }
+        button:active { transform: scale(0.96); }
+        .btn-save { width: 100%; padding: 16px; font-size: 1rem; font-weight: 800; color: #0f172a; }
+
+        .entry-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 18px; padding: 14px; margin-bottom: 12px; position: relative; border-left: 6px solid transparent; }
+        .entry-card.arbeit { border-left-color: var(--accent-color); }
+        .entry-card.urlaub { border-left-color: var(--success-color); }
+        .entry-card.krank { border-left-color: var(--danger-color); }
+        
+        .entry-main { display: flex; justify-content: space-between; align-items: flex-start; }
+        .entry-info { flex: 1; }
+        .btn-delete-item { background: none; color: var(--danger-color); font-size: 1.4rem; padding: 0 5px; opacity: 0.4; }
+        
+        .overtime-tag { font-weight: 800; margin-left: 5px; }
+        .badge { font-size: 0.65em; padding: 3px 8px; border-radius: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .backup-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
+        .btn-backup { background: #334155; color: white; padding: 14px; border-radius: 14px; font-size: 0.85rem; }
+        .btn-whatsapp { background: #16a34a; color: white; padding: 14px; border-radius: 14px; font-size: 0.85rem; width: 100%; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div class="login-card">
+        <svg class="drive-logo" style="width:120px; height:80px; margin-bottom:20px;" viewBox="0 0 200 120">
+            <path id="logoGrey" fill="var(--logo-grey)" d="M40,30 C15,40 10,75 45,95 C30,85 25,55 40,45 C55,35 85,45 100,60 L90,50 C75,35 55,25 40,30 Z"/>
+            <path id="logoBlue" fill="var(--accent-color)" d="M180,60 L140,25 V50 H100 C70,50 40,70 30,100 C50,80 80,75 100,75 H140 V100 L180,60 Z"/>
+        </svg>
+        <h2>Tylicki Drive</h2>
+        <p style="color:#94a3b8; margin-top:12px; margin-bottom: 30px;">Gute Fahrt</p>
+        <input type="text" id="driverNameInput" placeholder="Name eingeben...">
+        <button class="btn-save" style="background:var(--accent-color)" onclick="login()">Anmelden</button>
+    </div>
+</div>
+
+<div class="container">
+    <header class="app-header">
+        <div class="header-left">
+            <svg class="drive-logo" viewBox="0 0 200 120">
+                <path id="headerLogoGrey" fill="var(--logo-grey)" d="M40,30 C15,40 10,75 45,95 C30,85 25,55 40,45 C55,35 85,45 100,60 L90,50 C75,35 55,25 40,30 Z"/>
+                <path id="headerLogoBlue" fill="var(--accent-color)" d="M180,60 L140,25 V50 H100 C70,50 40,70 30,100 C50,80 80,75 100,75 H140 V100 L180,60 Z"/>
+            </svg>
+            <div>
+                <h2>Tylicki Drive</h2>
+                <div id="userNameDisplay">Fahrer: <span id="currentDriver" style="color:var(--text-color)"></span></div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button onclick="logout()" title="Logout">
+                <svg class="icon-logout" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="card">
+        <div class="stats-grid">
+            <div class="stat-card"><span class="stat-label">Netto</span><span class="stat-value" id="statNetto">0:00h</span></div>
+            <div class="stat-card"><span class="stat-label">Spesen</span><span class="stat-value" id="statSpesen" style="color:var(--warning-color)">0€</span></div>
+            <div class="stat-card"><span class="stat-label">Überstd.</span><span class="stat-value" id="statOvertime">0:00h</span></div>
+            <div class="stat-card"><span class="stat-label">KM</span><span class="stat-value" id="statKm" style="color:var(--accent-color)">0 km</span></div>
+            <div class="stat-card"><span class="stat-label">Urlaub</span><span class="stat-value" id="statUrlaub">0</span></div>
+            <div class="stat-card"><span class="stat-label">Brutto</span><span class="stat-value" id="statBrutto">0:00h</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <label>📌 Typ</label>
+        <select id="status" onchange="toggleUI(); updateSaveBtnColor();">
+            <option value="arbeit">Arbeit</option>
+            <option value="urlaub">Urlaub</option>
+            <option value="krank">Krank</option>
+        </select>
+        <label>📅 Datum</label>
+        <div style="display:flex; gap:10px;">
+            <input type="date" id="date">
+            <div id="endDateContainer" style="display: none; width: 100%;"><input type="date" id="endDate"></div>
+        </div>
+        <div id="workInputs">
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>🏁 Beginn</label><input type="time" id="start"></div>
+                <div style="flex:1;"><label>🚪 Ende</label><input type="time" id="end"></div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>🚗 KM Start</label><input type="number" id="kmStart" inputmode="numeric"></div>
+                <div style="flex:1;"><label>🏁 KM Ende</label><input type="number" id="kmEnd" inputmode="numeric"></div>
+            </div>
+            <label>☕ Pause (Minuten)</label>
+            <input type="number" id="pause" value="45" inputmode="numeric">
+        </div>
+        <label>📝 Notiz</label>
+        <textarea id="note" rows="1" placeholder="Tourinfos..."></textarea>
+        <button class="btn-save" id="saveBtn" onclick="speichern()">Eintrag speichern</button>
+    </div>
+
+    <div id="historySection">
+        <label>🔍 Monat filtern</label>
+        <select id="monthFilter" onchange="verlaufLaden()"></select>
+        <div id="historyList"></div>
+        
+        <div style="margin-top: 35px; border-top: 2px solid var(--border-color); padding-top: 20px;">
+            <div class="backup-section">
+                <button class="btn-backup" onclick="exportData()">💾 Export</button>
+                <button class="btn-backup" onclick="document.getElementById('fileInput').click()">📂 Laden</button>
+                <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importData(event)">
+            </div>
+            <button class="btn-whatsapp" onclick="sendWhatsApp()">Bericht via WhatsApp senden</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SOLL_MIN = 480;
+    const DB_KEY = 'tylicki_drive_v2026_final';
+    const USER_KEY = 'tylicki_user_active';
+
+    window.onload = () => {
+        checkUser();
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        updateSaveBtnColor();
+        aktualisiereFilter();
+        verlaufLaden();
+        suggestKm();
+    };
+
+    function checkUser() {
+        const user = sessionStorage.getItem(USER_KEY);
+        if (!user) {
+            document.getElementById('loginOverlay').style.display = 'flex';
+        } else {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('currentDriver').innerText = user;
+        }
+    }
+
+    function login() {
+        const name = document.getElementById('driverNameInput').value.trim();
+        if (!name) return alert("Bitte Namen eingeben!");
+        sessionStorage.setItem(USER_KEY, name);
+        checkUser();
+    }
+
+    function logout() {
+        sessionStorage.removeItem(USER_KEY);
+        location.reload();
+    }
+
+    function updateSaveBtnColor() {
+        const s = document.getElementById('status').value;
+        const colors = { arbeit: 'var(--accent-color)', urlaub: 'var(--success-color)', krank: 'var(--danger-color)' };
+        document.getElementById('saveBtn').style.background = colors[s];
+        document.getElementById('logoBlue').setAttribute('fill', colors[s]);
+        document.getElementById('headerLogoBlue').setAttribute('fill', colors[s]);
+    }
+
+    function toggleUI() {
+        const s = document.getElementById('status').value;
+        document.getElementById('workInputs').style.display = s === 'arbeit' ? 'block' : 'none';
+        document.getElementById('endDateContainer').style.display = s === 'arbeit' ? 'none' : 'block';
+    }
+
+    function suggestKm() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        const last = [...db].sort((a,b) => b.ts - a.ts).find(e => e.kmE > 0);
+        if (last) document.getElementById('kmStart').value = last.kmE;
+    }
+
+    function formatTime(min) {
+        const a = Math.abs(min);
+        return `${min < 0 ? "-" : ""}${Math.floor(a/60)}:${String(a%60).padStart(2,'0')}h`;
+    }
+
+    function speichern() {
+        const status = document.getElementById('status').value;
+        const dStr = document.getElementById('date').value;
+        if (!dStr) return alert("Datum fehlt!");
+
+        let db = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        const baseDate = new Date(dStr + "T12:00:00");
+
+        if (status === 'arbeit') {
+            const start = document.getElementById('start').value, end = document.getElementById('end').value;
+            const kmS = parseInt(document.getElementById('kmStart').value) || 0, kmE = parseInt(document.getElementById('kmEnd').value) || 0;
+            const pause = parseInt(document.getElementById('pause').value) || 0;
+
+            if (!start || !end) return alert("Zeiten eingeben!");
+            const [sh, sm] = start.split(':').map(Number), [eh, em] = end.split(':').map(Number);
+            let sT = sh * 60 + sm, eT = eh * 60 + em;
+            if (eT < sT) eT += 1440;
+
+            const b = eT - sT, n = Math.max(0, b - pause);
+            pushEntry(db, baseDate, status, b, n, n - SOLL_MIN, document.getElementById('note').value, b > 480 ? 14 : 0, kmE - kmS, kmS, kmE);
+        } else {
+            const endDStr = document.getElementById('endDate').value || dStr;
+            let cur = new Date(baseDate), last = new Date(endDStr + "T12:00:00");
+            while (cur <= last) {
+                if (cur.getDay() !== 0 && cur.getDay() !== 6) {
+                    pushEntry(db, new Date(cur), status, 0, SOLL_MIN, 0, document.getElementById('note').value, 0, 0, 0, 0);
+                }
+                cur.setDate(cur.getDate() + 1);
+            }
+        }
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        location.reload();
+    }
+
+    function pushEntry(db, d, s, b, n, o, note, spesen, km, ks, ke) {
+        const mKey = `${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+        const datumText = d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+        db.push({ id: Date.now() + Math.random(), ts: d.getTime(), monatKey: mKey, status: s, b, n, o, note, spesen, km, kmS: ks, kmE: ke, datum: datumText });
+    }
+
+    function saveNoteEdit(id, text) {
+        let db = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        const index = db.findIndex(e => e.id === id);
+        if (index !== -1) {
+            db[index].note = text;
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+        }
+    }
+
+    function verlaufLaden() {
+        const filter = document.getElementById('monthFilter').value;
+        let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        
+        let filteredData = (filter === "all") ? data : data.filter(e => e.monatKey === filter);
+        let totalOver = filteredData.reduce((acc, curr) => acc + curr.o, 0);
+
+        let sb=0, sn=0, sp=0, skm=0;
+        document.getElementById('historyList').innerHTML = filteredData.sort((a,b) => b.ts - a.ts).map(e => {
+            sb+=e.b; sn+=e.n; sp+=e.spesen; skm+=e.km;
+            const badgeCol = { arbeit: 'var(--accent-color)', urlaub: 'var(--success-color)', krank: 'var(--danger-color)' };
+            const oCol = e.o >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
+            
+            return `<div class="entry-card ${e.status}">
+                <div class="entry-main">
+                    <div class="entry-info">
+                        <strong>${e.datum} <span class="badge" style="background:${badgeCol[e.status]}; color:#000">${e.status}</span></strong>
+                        <div style="font-size:0.85em; color:#94a3b8; margin-top:4px;">
+                            ${formatTime(e.b)} Brutto | ${formatTime(e.n)} Netto <span class="overtime-tag" style="color:${oCol}">${(e.o>=0?"+":"")+formatTime(e.o)}</span><br>
+                            ${e.kmS ? `Fahrt: ${e.kmS} → ${e.kmE} (${e.km} km)` : "Fahrt: 0 km"}
+                            <input type="text" class="edit-note" value="${e.note || ''}" placeholder="Notiz..." onblur="saveNoteEdit(${e.id}, this.value)">
+                        </div>
+                    </div>
+                    <button class="btn-delete-item" onclick="del(${e.id})">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+        
+        document.getElementById('statBrutto').innerText = formatTime(sb);
+        document.getElementById('statNetto').innerText = formatTime(sn);
+        document.getElementById('statSpesen').innerText = sp + "€";
+        document.getElementById('statKm').innerText = skm + " km";
+        document.getElementById('statUrlaub').innerText = filteredData.filter(e => e.status === 'urlaub').length;
+        const oEl = document.getElementById('statOvertime');
+        oEl.innerText = (totalOver >= 0 ? "+" : "") + formatTime(totalOver);
+        oEl.style.color = totalOver >= 0 ? "var(--success-color)" : "var(--danger-color)";
+    }
+
+    function sendWhatsApp() {
+        const user = sessionStorage.getItem(USER_KEY) || 'Fahrer';
+        const filter = document.getElementById('monthFilter').value;
+        const statNetto = document.getElementById('statNetto').innerText;
+        const statOver = document.getElementById('statOvertime').innerText;
+        const statKm = document.getElementById('statKm').innerText;
+        
+        let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        let filtered = (filter === "all") ? data : data.filter(e => e.monatKey === filter);
+        let spesenTage = filtered.filter(e => e.status === 'arbeit' && e.b > 480).length;
+        let spesenSumme = spesenTage * 14;
+
+        let text = `*Tylicki Drive Bericht*\nFahrer: ${user}\nZeitraum: ${filter === 'all' ? 'Gesamt' : filter}\n------------------\n`;
+        text += `Nettozeit: ${statNetto}\n`;
+        text += `Überstunden: ${statOver}\n`;
+        text += `Kilometer: ${statKm}\n`;
+        text += `Spesen: ${spesenSumme}€ (${spesenTage} Tage à 14€)\n`;
+        text += `------------------\n`;
+        
+        const notes = filtered.filter(e => e.note).slice(0, 10);
+        if(notes.length > 0) {
+            text += `*Notizen:*\n`;
+            notes.forEach(e => text += `- ${e.datum}: ${e.note}\n`);
+        }
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+    }
+
+    function aktualisiereFilter() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+        const keys = [...new Set(db.map(e => e.monatKey))].sort().reverse();
+        document.getElementById('monthFilter').innerHTML = '<option value="all">Gesamt (Alle Monate)</option>' + keys.map(k => `<option value="${k}">${k}</option>`).join('');
+    }
+
+    function del(id) { if(confirm("Eintrag löschen?")) { let d = JSON.parse(localStorage.getItem(DB_KEY)); localStorage.setItem(DB_KEY, JSON.stringify(d.filter(e => e.id !== id))); verlaufLaden(); } }
+
+    function exportData() {
+        const d = localStorage.getItem(DB_KEY);
+        const name = sessionStorage.getItem(USER_KEY) || 'Fahrer';
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([d], {type: 'application/json'}));
+        a.download = `Tylicki_Drive_${name}_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+
+    function importData(ev) {
+        const reader = new FileReader();
+        reader.onload = (e) => { 
+            try { JSON.parse(e.target.result); localStorage.setItem(DB_KEY, e.target.result); location.reload(); }
+            catch(err) { alert("Fehler beim Laden!"); }
+        };
+        reader.readAsText(ev.target.files[0]);
+    }
+</script>
+</body>
+</html>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<script>
+  // Registriert den Service Worker für die App-Installation
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Tylicki Drive: Bereit zur Installation!"))
+      .catch((err) => console.log("SW Fehler:", err));
+  }
+</script>
