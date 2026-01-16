@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tylicki Drive</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         :root {
             --bg-color: #0f172a;
@@ -35,7 +42,6 @@
         .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
         .header-left { display: flex; align-items: center; gap: 15px; }
         
-        /* Logout Button Design */
         .header-right button { 
             background: rgba(239, 68, 68, 0.1); 
             color: var(--danger-color); 
@@ -98,7 +104,7 @@
             <path id="logoBlue" fill="var(--accent-color)" d="M180,60 L140,25 V50 H100 C70,50 40,70 30,100 C50,80 80,75 100,75 H140 V100 L180,60 Z"/>
         </svg>
         <h2>Tylicki Drive</h2>
-        <p style="color:#94a3b8; margin-top:12px; margin-bottom: 30px;">Gute Fahrt</p>
+        <p style="color:#94a3b8; margin-top:12px; margin-bottom: 30px;">Bereit zur Abfahrt?</p>
         <input type="text" id="driverNameInput" placeholder="Name eingeben...">
         <button class="btn-save" style="background:var(--accent-color)" onclick="login()">Anmelden</button>
     </div>
@@ -185,6 +191,13 @@
     const SOLL_MIN = 480;
     const DB_KEY = 'tylicki_drive_v2026_final';
     const USER_KEY = 'tylicki_user_active';
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Error:", err));
+        });
+    }
 
     window.onload = () => {
         checkUser();
@@ -384,16 +397,3 @@
 </script>
 </body>
 </html>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f172a">
-<link rel="apple-touch-icon" href="icon-192.png">
-
-<script>
-  // Registriert den Service Worker für die App-Installation
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("Tylicki Drive: Bereit zur Installation!"))
-      .catch((err) => console.log("SW Fehler:", err));
-  }
-</script>
